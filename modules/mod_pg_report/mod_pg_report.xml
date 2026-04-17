@@ -8,6 +8,7 @@
     <files>
         <filename module="mod_pg_report">mod_pg_report.php</filename>
         <filename>helper.php</filename>
+        <folder>fields</folder>
         <folder>tmpl</folder>
         <folder>media</folder>
         <folder>language</folder>
@@ -21,7 +22,7 @@
     </languages>
 
     <config>
-        <fields name="params">
+        <fields name="params" addfieldpath="modules/mod_pg_report/fields">
             <fieldset name="general" label="MOD_PG_REPORT_FIELDSET_GENERAL">
                 <field
                     name="base_sql"
@@ -53,7 +54,7 @@
                 <field name="per_page_default" type="number" label="MOD_PG_REPORT_PER_PAGE_DEFAULT" default="25" min="1" />
                 <field name="max_per_page" type="number" label="MOD_PG_REPORT_MAX_PER_PAGE" default="200" min="1" />
                 <field name="visible_columns" type="text" label="MOD_PG_REPORT_VISIBLE_COLUMNS" description="MOD_PG_REPORT_VISIBLE_COLUMNS_DESC" default="" />
-                <field name="column_labels" type="textarea" label="MOD_PG_REPORT_COLUMN_LABELS" description="MOD_PG_REPORT_COLUMN_LABELS_DESC" rows="6" filter="raw" />
+                <field name="column_labels" type="columnlabelsmap" label="MOD_PG_REPORT_COLUMN_LABELS" description="MOD_PG_REPORT_COLUMN_LABELS_DESC" filter="raw" />
                 <field name="collapsible_groups" type="radio" label="MOD_PG_REPORT_COLLAPSIBLE_GROUPS" default="1" class="btn-group btn-group-yesno">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
@@ -95,6 +96,18 @@
                     <option value="deny">MOD_PG_REPORT_ACL_MODE_DENY</option>
                 </field>
                 <field name="acl_groups" type="usergrouplist" label="MOD_PG_REPORT_ACL_GROUPS" multiple="true" class="choices" layout="joomla.form.field.list-fancy-select" />
+            </fieldset>
+
+            <fieldset name="csv_export" label="MOD_PG_REPORT_FIELDSET_CSV_EXPORT">
+                <field name="enable_csv_export" type="radio" label="MOD_PG_REPORT_ENABLE_CSV_EXPORT" default="0" class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="csv_acl_mode" type="list" label="MOD_PG_REPORT_CSV_ACL_MODE" default="allow">
+                    <option value="allow">MOD_PG_REPORT_ACL_MODE_ALLOW</option>
+                    <option value="deny">MOD_PG_REPORT_ACL_MODE_DENY</option>
+                </field>
+                <field name="csv_acl_groups" type="usergrouplist" label="MOD_PG_REPORT_CSV_ACL_GROUPS" multiple="true" class="choices" layout="joomla.form.field.list-fancy-select" />
             </fieldset>
         </fields>
     </config>

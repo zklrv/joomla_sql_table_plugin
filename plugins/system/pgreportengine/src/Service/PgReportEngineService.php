@@ -47,9 +47,12 @@ class PgReportEngineService
         $pointerMatchColumns = $this->filterColumns($columns, $options['pointer_match_columns'] ?? ['fullfio', 'email', 'mobile_phone', 'ip_phone']);
         $pointerMatchColumns = !empty($pointerMatchColumns) ? $pointerMatchColumns : $searchColumns;
         $groupCascade = $this->filterColumns($columns, $options['group_key_cascade'] ?? ['department_name', 'maindepartament', 'dept_code', 'dept_id']);
+        $sortColumns = $this->filterColumns($columns, $options['sortable_columns'] ?? []);
+        $sortColumns = !empty($sortColumns) ? $sortColumns : $columns;
+        $exportAll = !empty($options['export_all']);
 
         $sort = (string) ($options['sort'] ?? '');
-        $sort = in_array($sort, $columns, true) ? $sort : (string) ($columns[0] ?? '');
+        $sort = in_array($sort, $sortColumns, true) ? $sort : (string) ($sortColumns[0] ?? '');
         $dir = strtolower((string) ($options['dir'] ?? 'asc')) === 'desc' ? 'DESC' : 'ASC';
 
         $maxPerPage = max(1, (int) ($options['max_per_page'] ?? 200));
@@ -102,12 +105,14 @@ class PgReportEngineService
         $dataSql = 'SELECT t.*, ' . $matchSelect . $groupExpr . ' AS __group_key '
             . 'FROM (' . $sql . ') t'
             . $dataWhereSql
-            . ' ORDER BY __group_key ASC, t.' . $this->quoteIdentifier($sort) . ' ' . $dir
-            . ' LIMIT $' . (count($dataParams) + 1)
-            . ' OFFSET $' . (count($dataParams) + 2);
+            . ' ORDER BY __group_key ASC, t.' . $this->quoteIdentifier($sort) . ' ' . $dir;
 
-        $dataParams[] = $perPage;
-        $dataParams[] = $offset;
+        if (!$exportAll) {
+            $dataSql .= ' LIMIT $' . (count($dataParams) + 1)
+                . ' OFFSET $' . (count($dataParams) + 2);
+            $dataParams[] = $perPage;
+            $dataParams[] = $offset;
+        }
 
         $rows = $this->fetchRows($dataSql, $dataParams);
 
@@ -171,7 +176,13 @@ class PgReportEngineService
             $groups[$groupKey]['rows'][] = $row;
         }
 
-        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        if ($exportAll) {
+            $page = 1;
+            $perPage = max(1, $totalRows);
+            $totalPages = 1;
+        } else {
+            $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        }
 
         return [
             'columns' => $columns,

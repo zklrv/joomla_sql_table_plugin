@@ -18,6 +18,7 @@ $wa->registerAndUseStyle('mod_pg_report.main', 'media/mod_pg_report/css/report.c
     class="pg-report"
     data-module-id="<?php echo (int) $initialState['moduleId']; ?>"
     data-endpoint="<?php echo htmlspecialchars($initialState['endpoint'], ENT_QUOTES, 'UTF-8'); ?>"
+    data-csv-endpoint="<?php echo htmlspecialchars((string) ($initialState['csvEndpoint'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
     data-token="<?php echo htmlspecialchars($initialState['token'], ENT_QUOTES, 'UTF-8'); ?>"
     data-default-sort="<?php echo htmlspecialchars($initialState['defaultSortBy'], ENT_QUOTES, 'UTF-8'); ?>"
     data-default-dir="<?php echo htmlspecialchars($initialState['defaultSortDir'], ENT_QUOTES, 'UTF-8'); ?>"
@@ -42,6 +43,12 @@ $wa->registerAndUseStyle('mod_pg_report.main', 'media/mod_pg_report/css/report.c
                 <?php endforeach; ?>
             </select>
         </label>
+
+        <?php if (!empty($initialState['csvEnabled'])) : ?>
+            <button type="button" class="pg-report__csv btn btn-sm btn-outline-success">
+                <?php echo Text::_('MOD_PG_REPORT_DOWNLOAD_CSV'); ?>
+            </button>
+        <?php endif; ?>
     </div>
 
     <div class="pg-report__messages"></div>
