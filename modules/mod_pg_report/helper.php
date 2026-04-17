@@ -18,6 +18,8 @@ class ModPgReportHelper
 {
     public static function getInitialState($module, Registry $params): array
     {
+        $collapsibleGroups = (bool) $params->get('collapsible_groups', 1);
+
         return [
             'moduleId' => (int) $module->id,
             'endpoint' => Route::_('index.php?option=com_ajax&module=pg_report&method=query&format=json'),
@@ -25,7 +27,8 @@ class ModPgReportHelper
             'defaultPerPage' => (int) $params->get('per_page_default', 25),
             'defaultSortBy' => (string) $params->get('default_sort_by', ''),
             'defaultSortDir' => strtolower((string) $params->get('default_sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc',
-            'collapsibleGroups' => (bool) $params->get('collapsible_groups', 1),
+            'collapsibleGroups' => $collapsibleGroups,
+            'collapsedByDefault' => $collapsibleGroups && (bool) $params->get('collapsed_by_default', 0),
         ];
     }
 
@@ -69,13 +72,17 @@ class ModPgReportHelper
             $service = new PgReportEngineService();
             $result = $service->run(self::buildServiceOptions($params, $input));
 
+            $collapsibleGroups = (bool) $params->get('collapsible_groups', 1);
+            $collapsedByDefault = $collapsibleGroups && (bool) $params->get('collapsed_by_default', 0);
+
             $renderState = [
                 'sort' => $input->getCmd('sort', (string) $params->get('default_sort_by', '')),
                 'dir' => strtolower($input->getCmd('dir', (string) $params->get('default_sort_dir', 'asc'))) === 'desc' ? 'desc' : 'asc',
                 'page' => max(1, $input->getInt('page', 1)),
                 'perPage' => max(1, $input->getInt('per_page', (int) $params->get('per_page_default', 25))),
                 'search' => trim((string) $input->getString('search', '')),
-                'collapsibleGroups' => (bool) $params->get('collapsible_groups', 1),
+                'collapsibleGroups' => $collapsibleGroups,
+                'collapsedByDefault' => $collapsedByDefault,
             ];
 
             return [

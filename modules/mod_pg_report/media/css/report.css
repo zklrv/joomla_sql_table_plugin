@@ -31,17 +31,8 @@
   margin-left: 0.25rem;
 }
 
-.pg-report__group-row td {
-  background: #f6f8fa;
-}
-
-.pg-report__toggle {
-  margin-right: 0.5rem;
-}
-
 .pg-report__totals {
-  margin-left: 0.75rem;
-  color: #555;
+  display: inline-block;
 }
 
 .pg-report__pagination {
@@ -53,4 +44,8 @@
 
 .pg-report__content--loading {
   opacity: 0.6;
+}
+
+.pg-report__row--hidden {
+  display: none;
 }

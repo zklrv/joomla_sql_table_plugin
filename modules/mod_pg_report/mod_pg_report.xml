@@ -51,6 +51,10 @@
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
+                <field name="collapsed_by_default" type="radio" label="MOD_PG_REPORT_COLLAPSED_BY_DEFAULT" default="0" class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
             </fieldset>
 
             <fieldset name="database" label="MOD_PG_REPORT_FIELDSET_DATABASE">
