@@ -43,9 +43,9 @@
 }
 
 .pg-report__row--hidden {
-  display: none;
+  display: none !important;
 }
 
 .pg-report__row--match td {
-  background-color: rgba(255, 193, 7, 0.2);
+  background-color: rgba(25, 135, 84, 0.12);
 }

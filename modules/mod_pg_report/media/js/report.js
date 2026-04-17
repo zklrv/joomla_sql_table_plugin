@@ -8,6 +8,7 @@
 
     const searchInput = container.querySelector('.pg-report__search');
     const perPageSelect = container.querySelector('.pg-report__per-page');
+    const csvButton = container.querySelector('.pg-report__csv');
     const content = container.querySelector('.pg-report__content');
     const messages = container.querySelector('.pg-report__messages');
 
@@ -125,6 +126,22 @@
       }
     };
 
+    const downloadCsv = () => {
+      const csvEndpoint = container.dataset.csvEndpoint;
+
+      if (!csvEndpoint) {
+        return;
+      }
+
+      const url = new URL(csvEndpoint, window.location.origin);
+      url.searchParams.set('module_id', moduleId);
+      url.searchParams.set('search', state.search);
+      url.searchParams.set('sort', state.sort);
+      url.searchParams.set('dir', state.dir);
+      url.searchParams.set(token, '1');
+      window.location.assign(url.toString());
+    };
+
     searchInput?.addEventListener('input', () => {
       window.clearTimeout(searchTimer);
       searchTimer = window.setTimeout(() => {
@@ -138,6 +155,10 @@
       state.perPage = Number(perPageSelect.value || 25);
       state.page = 1;
       load();
+    });
+
+    csvButton?.addEventListener('click', () => {
+      downloadCsv();
     });
 
     content.addEventListener('click', (event) => {
