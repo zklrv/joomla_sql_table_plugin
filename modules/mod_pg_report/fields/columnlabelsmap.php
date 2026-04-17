@@ -44,6 +44,7 @@ class JFormFieldColumnLabelsMap extends FormField
 
         Factory::getApplication()->getDocument()->addScriptDeclaration(
             "(function(){"
+            . "var init=function(){"
             . "var hidden=document.getElementById(" . $hiddenIdJs . ");"
             . "var table=document.getElementById(" . $tableIdJs . ");"
             . "if(!hidden||!table){return;}"
@@ -62,6 +63,8 @@ class JFormFieldColumnLabelsMap extends FormField
             . "var form=hidden.form||hidden.closest('form');"
             . "if(form){form.addEventListener('submit',sync);}"
             . "sync();"
+            . "};"
+            . "if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}"
             . "})();"
         );
 

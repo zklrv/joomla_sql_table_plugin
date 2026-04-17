@@ -8,7 +8,6 @@
 
     const searchInput = container.querySelector('.pg-report__search');
     const perPageSelect = container.querySelector('.pg-report__per-page');
-    const csvButton = container.querySelector('.pg-report__csv');
     const content = container.querySelector('.pg-report__content');
     const messages = container.querySelector('.pg-report__messages');
 
@@ -139,8 +138,13 @@
       load();
     });
 
-    csvButton?.addEventListener('click', () => {
-      downloadCsv();
+    container.addEventListener('click', (event) => {
+      const csvTarget = event.target.closest('.pg-report__csv');
+
+      if (csvTarget && container.contains(csvTarget)) {
+        event.preventDefault();
+        downloadCsv();
+      }
     });
 
     content.addEventListener('click', (event) => {

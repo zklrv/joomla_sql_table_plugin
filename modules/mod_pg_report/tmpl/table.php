@@ -90,10 +90,14 @@ $escape = static function ($value): string {
                     }
                 }
 
-                $isCollapsed = $collapsedByDefault;
+                $isCollapsed = $collapsible && $collapsedByDefault;
 
-                if ($isPointerSearchMode && $autoExpandOnSearch && $search !== '') {
-                    $isCollapsed = !$groupHasMatch;
+                if ($collapsible && $autoExpandOnSearch && $search !== '') {
+                    if ($isPointerSearchMode) {
+                        $isCollapsed = !$groupHasMatch;
+                    } else {
+                        $isCollapsed = false;
+                    }
                 }
                 ?>
                 <tr class="pg-report__group-row" data-has-match="<?php echo $groupHasMatch ? '1' : '0'; ?>">
