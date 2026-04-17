@@ -10,7 +10,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Form\FormField;
 use Joomla\CMS\Language\Text;
 
-class JFormFieldColumnlabelsmap extends FormField
+class JFormFieldColumnLabelsMap extends FormField
 {
     protected $type = 'columnlabelsmap';
 
@@ -39,10 +39,13 @@ class JFormFieldColumnlabelsmap extends FormField
                 . '</td></tr>';
         }
 
+        $hiddenIdJs = json_encode($id, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+        $tableIdJs = json_encode($id . '_table', JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+
         Factory::getApplication()->getDocument()->addScriptDeclaration(
             "(function(){"
-            . "var hidden=document.getElementById('" . addslashes($id) . "');"
-            . "var table=document.getElementById('" . addslashes($id . '_table') . "');"
+            . "var hidden=document.getElementById(" . $hiddenIdJs . ");"
+            . "var table=document.getElementById(" . $tableIdJs . ");"
             . "if(!hidden||!table){return;}"
             . "var sync=function(){"
             . "var map={};"

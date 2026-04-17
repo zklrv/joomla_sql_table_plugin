@@ -133,7 +133,9 @@
         return;
       }
 
-      const url = new URL(csvEndpoint, window.location.origin);
+      const url = /^[a-z][a-z\d+\-.]*:/i.test(csvEndpoint)
+        ? new URL(csvEndpoint)
+        : new URL(csvEndpoint, window.location.origin);
       url.searchParams.set('module_id', moduleId);
       url.searchParams.set('search', state.search);
       url.searchParams.set('sort', state.sort);

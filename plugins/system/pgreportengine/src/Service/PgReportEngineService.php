@@ -47,7 +47,7 @@ class PgReportEngineService
         $pointerMatchColumns = $this->filterColumns($columns, $options['pointer_match_columns'] ?? ['fullfio', 'email', 'mobile_phone', 'ip_phone']);
         $pointerMatchColumns = !empty($pointerMatchColumns) ? $pointerMatchColumns : $searchColumns;
         $groupCascade = $this->filterColumns($columns, $options['group_key_cascade'] ?? ['department_name', 'maindepartament', 'dept_code', 'dept_id']);
-        $sortColumns = $this->filterColumns($columns, $options['sort_columns'] ?? []);
+        $sortColumns = $this->filterColumns($columns, $options['sortable_columns'] ?? []);
         $sortColumns = !empty($sortColumns) ? $sortColumns : $columns;
         $exportAll = !empty($options['export_all']);
 

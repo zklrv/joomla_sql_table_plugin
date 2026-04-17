@@ -189,7 +189,7 @@ class ModPgReportHelper
             'page' => max(1, $input->getInt('page', 1)),
             'per_page' => max(1, $input->getInt('per_page', (int) $params->get('per_page_default', 25))),
             'max_per_page' => max(1, (int) $params->get('max_per_page', 200)),
-            'sort_columns' => $visibleColumns,
+            'sortable_columns' => $visibleColumns,
             'export_all' => $exportAll,
             'group_key_cascade' => self::parseCsv($params->get('group_key_cascade', 'department_name,maindepartament,dept_code,dept_id')),
             'db' => [
@@ -310,7 +310,7 @@ class ModPgReportHelper
         $stream = fopen('php://temp', 'wb+');
 
         if ($stream === false) {
-            throw new \RuntimeException(Text::_('MOD_PG_REPORT_ERROR_CSV_EXPORT'));
+            throw new \RuntimeException(Text::_('MOD_PG_REPORT_ERROR_CSV_EXPORT_STREAM'));
         }
 
         fputcsv($stream, array_map(static fn($column) => $columnLabels[$column] ?? $column, $columns));
@@ -329,15 +329,17 @@ class ModPgReportHelper
         $content = stream_get_contents($stream);
         fclose($stream);
 
-        return "\xEF\xBB\xBF" . ($content !== false ? $content : '');
+        if ($content === false) {
+            throw new \RuntimeException(Text::_('MOD_PG_REPORT_ERROR_CSV_EXPORT'));
+        }
+
+        return "\xEF\xBB\xBF" . $content;
     }
 
     private static function buildCsvFilename(string $moduleTitle): string
     {
         $base = trim($moduleTitle) !== '' ? $moduleTitle : 'pg-report';
-        $safe = preg_replace('/[^A-Za-z0-9_-]+/', '-', strtolower($base));
-        $safe = trim((string) $safe, '-_');
-        $safe = $safe !== '' ? $safe : 'pg-report';
+        $safe = trim((string) preg_replace('/[^\p{L}\p{N}_-]+/u', '-', mb_strtolower($base, 'UTF-8')), '-_') ?: 'pg-report';
 
         return $safe . '-' . gmdate('Ymd-His') . '.csv';
     }
