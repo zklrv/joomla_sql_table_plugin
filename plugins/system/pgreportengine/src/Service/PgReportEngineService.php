@@ -72,7 +72,7 @@ class PgReportEngineService
         if ($isPointerSearch) {
             $index = 1;
             $pointerCondition = $this->buildSearchCondition($pointerMatchColumns, $search, 't', $index, $countParams);
-            $matchedGroupKeysSql = 'SELECT DISTINCT ' . $groupExpr . ' AS group_key FROM (' . $sql . ') t WHERE (' . $pointerCondition . ')';
+            $matchedGroupKeysSql = $this->buildMatchedGroupKeysSql($groupExpr, $sql, $pointerCondition);
             $countWhereSql = ' WHERE ' . $groupExpr . ' IN (' . $matchedGroupKeysSql . ')';
         } elseif ($search !== '' && !empty($searchColumns)) {
             $index = 1;
@@ -91,8 +91,7 @@ class PgReportEngineService
             $index = 1;
             $rowMatchCondition = $this->buildSearchCondition($pointerMatchColumns, $search, 't', $index, $dataParams);
             $matchSelect = 'CASE WHEN (' . $rowMatchCondition . ') THEN 1 ELSE 0 END AS __match, ';
-            $pointerCondition = $this->buildSearchCondition($pointerMatchColumns, $search, 't', $index, $dataParams);
-            $matchedGroupKeysSql = 'SELECT DISTINCT ' . $groupExpr . ' AS group_key FROM (' . $sql . ') t WHERE (' . $pointerCondition . ')';
+            $matchedGroupKeysSql = $this->buildMatchedGroupKeysSql($groupExpr, $sql, $rowMatchCondition);
             $dataWhereSql = ' WHERE ' . $groupExpr . ' IN (' . $matchedGroupKeysSql . ')';
         } elseif ($search !== '' && !empty($searchColumns)) {
             $index = 1;
@@ -124,7 +123,7 @@ class PgReportEngineService
         if ($isPointerSearch) {
             $index = 1;
             $pointerCondition = $this->buildSearchCondition($pointerMatchColumns, $search, 't', $index, $groupTotalsParams);
-            $matchedGroupKeysSql = 'SELECT DISTINCT ' . $groupExpr . ' AS group_key FROM (' . $sql . ') t WHERE (' . $pointerCondition . ')';
+            $matchedGroupKeysSql = $this->buildMatchedGroupKeysSql($groupExpr, $sql, $pointerCondition);
             $groupTotalsWhereSql = ' WHERE ' . $groupExpr . ' IN (' . $matchedGroupKeysSql . ')';
         } elseif ($search !== '' && !empty($searchColumns)) {
             $index = 1;
@@ -421,6 +420,11 @@ class PgReportEngineService
         }
 
         return implode(' OR ', $parts);
+    }
+
+    private function buildMatchedGroupKeysSql(string $groupExpr, string $sql, string $matchCondition): string
+    {
+        return 'SELECT DISTINCT ' . $groupExpr . ' AS group_key FROM (' . $sql . ') t WHERE (' . $matchCondition . ')';
     }
 
     private function buildGroupExpression(array $groupCascade): string

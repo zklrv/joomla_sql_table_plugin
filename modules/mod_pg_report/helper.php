@@ -166,17 +166,28 @@ class ModPgReportHelper
 
     private static function parseColumnLabels(string $value): array
     {
-        $lines = preg_split('/\R/u', $value) ?: [];
+        $lines = preg_split('/\R/u', $value);
+
+        if ($lines === false) {
+            return [];
+        }
+
         $map = [];
 
         foreach ($lines as $line) {
             $line = trim((string) $line);
 
-            if ($line === '' || strpos($line, '=') === false) {
+            if ($line === '' || !str_contains($line, '=')) {
                 continue;
             }
 
-            [$column, $label] = explode('=', $line, 2);
+            $parts = explode('=', $line, 2);
+
+            if (count($parts) !== 2) {
+                continue;
+            }
+
+            [$column, $label] = $parts;
             $column = trim($column);
             $label = trim($label);
 

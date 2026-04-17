@@ -29,9 +29,10 @@ if (empty($requestedVisibleColumns)) {
     $columns = $availableColumns;
 } else {
     $columns = [];
+    $availableColumnsMap = array_fill_keys($availableColumns, true);
 
     foreach ($requestedVisibleColumns as $column) {
-        if (in_array($column, $availableColumns, true)) {
+        if (isset($availableColumnsMap[$column])) {
             $columns[] = $column;
         }
     }
