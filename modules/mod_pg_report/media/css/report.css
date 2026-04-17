@@ -31,10 +31,6 @@
   margin-left: 0.25rem;
 }
 
-.pg-report__totals {
-  display: inline-block;
-}
-
 .pg-report__pagination {
   display: flex;
   align-items: center;

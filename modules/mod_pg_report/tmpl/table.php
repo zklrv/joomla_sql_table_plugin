@@ -61,10 +61,13 @@ $escape = static function ($value): string {
                             <button
                                 class="pg-report__toggle btn btn-sm btn-outline-primary me-2"
                                 data-group="<?php echo $groupIndex; ?>"
+                                data-label-expand="<?php echo $escape(Text::_('MOD_PG_REPORT_EXPAND_GROUP')); ?>"
+                                data-label-collapse="<?php echo $escape(Text::_('MOD_PG_REPORT_COLLAPSE_GROUP')); ?>"
                                 type="button"
                                 aria-expanded="<?php echo $isCollapsed ? 'false' : 'true'; ?>"
+                                title="<?php echo $escape(Text::_('MOD_PG_REPORT_TOGGLE_GROUP')); ?>"
                             >
-                                <span class="visually-hidden"><?php echo Text::_('MOD_PG_REPORT_TOGGLE_GROUP'); ?></span>
+                                <span class="visually-hidden pg-report__toggle-text"><?php echo $isCollapsed ? $escape(Text::_('MOD_PG_REPORT_EXPAND_GROUP')) : $escape(Text::_('MOD_PG_REPORT_COLLAPSE_GROUP')); ?></span>
                                 <span class="pg-report__toggle-icon" aria-hidden="true"><?php echo $isCollapsed ? '+' : '−'; ?></span>
                             </button>
                         <?php endif; ?>

@@ -39,6 +39,8 @@
       const group = toggleTarget.dataset.group;
       const rows = content.querySelectorAll(`.pg-report__data-row[data-group="${group}"]`);
       const icon = toggleTarget.querySelector('.pg-report__toggle-icon');
+      const text = toggleTarget.querySelector('.pg-report__toggle-text');
+      const actionLabel = collapsed ? toggleTarget.dataset.labelExpand : toggleTarget.dataset.labelCollapse;
 
       rows.forEach((row) => {
         row.classList.toggle(hiddenRowClass, collapsed);
@@ -48,6 +50,10 @@
 
       if (icon) {
         icon.textContent = collapsed ? '+' : '−';
+      }
+
+      if (text) {
+        text.textContent = actionLabel || '';
       }
     };
 
@@ -146,8 +152,8 @@
       const toggleTarget = event.target.closest('.pg-report__toggle');
 
       if (toggleTarget) {
-        const isExpanded = toggleTarget.getAttribute('aria-expanded') !== 'false';
-        setGroupCollapsed(toggleTarget, isExpanded);
+        const isCurrentlyExpanded = toggleTarget.getAttribute('aria-expanded') !== 'false';
+        setGroupCollapsed(toggleTarget, isCurrentlyExpanded);
       }
     });
 
