@@ -60,24 +60,6 @@
       }
     };
 
-    const applyInitialCollapsedState = () => {
-      if (state.searchMode === 'pointer' && state.autoExpandOnSearch && state.search.trim() !== '') {
-        content.querySelectorAll('.pg-report__toggle').forEach((toggleTarget) => {
-          const hasMatch = toggleTarget.dataset.hasMatch === '1';
-          setGroupCollapsed(toggleTarget, !hasMatch);
-        });
-        return;
-      }
-
-      if (container.dataset.collapsedByDefault !== '1') {
-        return;
-      }
-
-      content.querySelectorAll('.pg-report__toggle').forEach((toggleTarget) => {
-        setGroupCollapsed(toggleTarget, true);
-      });
-    };
-
     const load = async () => {
       setMessage('');
       content.classList.add('pg-report__content--loading');
@@ -113,8 +95,6 @@
         }
 
         content.innerHTML = data.html || '';
-        applyInitialCollapsedState();
-
         if (Array.isArray(data.warnings) && data.warnings.length) {
           setMessage(data.warnings.join(' | '), false);
         }

@@ -91,7 +91,7 @@ class ModPgReportHelper
                 'collapsedByDefault' => $collapsedByDefault,
                 'autoExpandOnSearch' => (bool) $params->get('auto_expand_on_search', 1),
                 'searchMode' => self::normalizeSearchMode((string) $params->get('search_mode', 'standard')),
-                'visibleColumns' => self::parseCsv((string) $params->get('visible_columns', '')),
+                'visibleColumns' => self::parseCsv((string) $params->get('visible_columns_ui', '')),
                 'columnLabels' => self::parseColumnLabels((string) $params->get('column_labels', '')),
             ];
 
@@ -175,7 +175,7 @@ class ModPgReportHelper
 
     private static function buildServiceOptions(Registry $params, $input, bool $exportAll = false): array
     {
-        $visibleColumns = self::parseCsv((string) $params->get('visible_columns', ''));
+        $visibleColumnsUi = self::parseCsv((string) $params->get('visible_columns_ui', ''));
 
         return [
             'sql' => (string) $params->get('base_sql', ''),
@@ -189,7 +189,7 @@ class ModPgReportHelper
             'page' => max(1, $input->getInt('page', 1)),
             'per_page' => max(1, $input->getInt('per_page', (int) $params->get('per_page_default', 25))),
             'max_per_page' => max(1, (int) $params->get('max_per_page', 200)),
-            'sortable_columns' => $visibleColumns,
+            'sortable_columns' => $visibleColumnsUi,
             'export_all' => $exportAll,
             'group_key_cascade' => self::parseCsv($params->get('group_key_cascade', 'department_name,maindepartament,dept_code,dept_id')),
             'db' => [
@@ -313,7 +313,7 @@ class ModPgReportHelper
             throw new \RuntimeException(Text::_('MOD_PG_REPORT_ERROR_CSV_EXPORT_STREAM'));
         }
 
-        fputcsv($stream, array_map(static fn($column) => $columnLabels[$column] ?? $column, $columns));
+        fputcsv($stream, array_map(static fn($column) => $columnLabels[$column] ?? $column, $columns), ';');
 
         foreach ($rows as $row) {
             $csvRow = [];
@@ -322,7 +322,7 @@ class ModPgReportHelper
                 $csvRow[] = isset($row[$column]) ? (string) $row[$column] : '';
             }
 
-            fputcsv($stream, $csvRow);
+            fputcsv($stream, $csvRow, ';');
         }
 
         rewind($stream);

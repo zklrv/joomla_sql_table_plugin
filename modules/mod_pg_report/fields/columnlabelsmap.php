@@ -58,6 +58,10 @@ class JFormFieldColumnLabelsMap extends FormField
             . "hidden.value=Object.keys(map).length?JSON.stringify(map):'';"
             . "};"
             . "table.addEventListener('input',function(event){if(event.target&&event.target.matches('input')){sync();}});"
+            . "table.addEventListener('change',function(event){if(event.target&&event.target.matches('input')){sync();}});"
+            . "var form=hidden.form||hidden.closest('form');"
+            . "if(form){form.addEventListener('submit',sync);}"
+            . "sync();"
             . "})();"
         );
 
@@ -123,7 +127,7 @@ class JFormFieldColumnLabelsMap extends FormField
     {
         $keys = [];
 
-        foreach (['visible_columns', 'search_columns', 'pointer_match_columns', 'group_key_cascade'] as $field) {
+        foreach (['visible_columns_ui', 'visible_columns', 'search_columns', 'pointer_match_columns', 'group_key_cascade'] as $field) {
             $raw = (string) $this->form->getValue($field, 'params', '');
 
             foreach (array_filter(array_map('trim', explode(',', $raw))) as $column) {
