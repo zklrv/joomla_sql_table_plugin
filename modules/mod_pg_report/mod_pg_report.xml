@@ -39,7 +39,12 @@
                 </field>
 
                 <field name="group_key_cascade" type="text" label="MOD_PG_REPORT_GROUP_KEY_CASCADE" default="department_name,maindepartament,dept_code,dept_id" />
+                <field name="search_mode" type="list" label="MOD_PG_REPORT_SEARCH_MODE" description="MOD_PG_REPORT_SEARCH_MODE_DESC" default="standard">
+                    <option value="standard">MOD_PG_REPORT_SEARCH_MODE_STANDARD</option>
+                    <option value="pointer">MOD_PG_REPORT_SEARCH_MODE_POINTER</option>
+                </field>
                 <field name="search_columns" type="text" label="MOD_PG_REPORT_SEARCH_COLUMNS" default="dept_code,maindepartament,department_name,staff_unit_name,fullfio,email,mobile_phone,ip_phone" />
+                <field name="pointer_match_columns" type="text" label="MOD_PG_REPORT_POINTER_MATCH_COLUMNS" description="MOD_PG_REPORT_POINTER_MATCH_COLUMNS_DESC" default="fullfio,email,mobile_phone,ip_phone" />
                 <field name="default_sort_by" type="text" label="MOD_PG_REPORT_DEFAULT_SORT_BY" default="dept_code" />
                 <field name="default_sort_dir" type="list" label="MOD_PG_REPORT_DEFAULT_SORT_DIR" default="asc">
                     <option value="asc">MOD_PG_REPORT_ASC</option>
@@ -47,11 +52,17 @@
                 </field>
                 <field name="per_page_default" type="number" label="MOD_PG_REPORT_PER_PAGE_DEFAULT" default="25" min="1" />
                 <field name="max_per_page" type="number" label="MOD_PG_REPORT_MAX_PER_PAGE" default="200" min="1" />
+                <field name="visible_columns" type="text" label="MOD_PG_REPORT_VISIBLE_COLUMNS" description="MOD_PG_REPORT_VISIBLE_COLUMNS_DESC" default="" />
+                <field name="column_labels" type="textarea" label="MOD_PG_REPORT_COLUMN_LABELS" description="MOD_PG_REPORT_COLUMN_LABELS_DESC" rows="6" filter="raw" />
                 <field name="collapsible_groups" type="radio" label="MOD_PG_REPORT_COLLAPSIBLE_GROUPS" default="1" class="btn-group btn-group-yesno">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
                 <field name="collapsed_by_default" type="radio" label="MOD_PG_REPORT_COLLAPSED_BY_DEFAULT" default="0" class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="auto_expand_on_search" type="radio" label="MOD_PG_REPORT_AUTO_EXPAND_ON_SEARCH" description="MOD_PG_REPORT_AUTO_EXPAND_ON_SEARCH_DESC" default="1" class="btn-group btn-group-yesno">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
@@ -83,7 +94,7 @@
                     <option value="allow">MOD_PG_REPORT_ACL_MODE_ALLOW</option>
                     <option value="deny">MOD_PG_REPORT_ACL_MODE_DENY</option>
                 </field>
-                <field name="acl_groups" type="usergrouplist" label="MOD_PG_REPORT_ACL_GROUPS" multiple="true" />
+                <field name="acl_groups" type="usergrouplist" label="MOD_PG_REPORT_ACL_GROUPS" multiple="true" class="choices" layout="joomla.form.field.list-fancy-select" />
             </fieldset>
         </fields>
     </config>

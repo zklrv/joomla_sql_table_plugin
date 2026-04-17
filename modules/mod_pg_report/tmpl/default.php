@@ -23,6 +23,8 @@ $wa->registerAndUseStyle('mod_pg_report.main', 'media/mod_pg_report/css/report.c
     data-default-dir="<?php echo htmlspecialchars($initialState['defaultSortDir'], ENT_QUOTES, 'UTF-8'); ?>"
     data-default-per-page="<?php echo (int) $initialState['defaultPerPage']; ?>"
     data-collapsed-by-default="<?php echo !empty($initialState['collapsedByDefault']) ? '1' : '0'; ?>"
+    data-search-mode="<?php echo htmlspecialchars((string) ($initialState['searchMode'] ?? 'standard'), ENT_QUOTES, 'UTF-8'); ?>"
+    data-auto-expand-on-search="<?php echo !empty($initialState['autoExpandOnSearch']) ? '1' : '0'; ?>"
 >
     <div class="pg-report__controls">
         <label>

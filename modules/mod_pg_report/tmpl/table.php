@@ -10,7 +10,7 @@ use Joomla\CMS\Language\Text;
 
 $result = $result ?? [];
 $state = $state ?? [];
-$columns = $result['columns'] ?? [];
+$availableColumns = $result['columns'] ?? [];
 $groups = $result['groups'] ?? [];
 $totalRows = (int) ($result['total_rows'] ?? 0);
 $totalPages = max(1, (int) ($result['total_pages'] ?? 1));
@@ -19,6 +19,30 @@ $sort = (string) ($state['sort'] ?? '');
 $dir = (string) ($state['dir'] ?? 'asc');
 $collapsible = !empty($state['collapsibleGroups']);
 $collapsedByDefault = $collapsible && !empty($state['collapsedByDefault']);
+$search = trim((string) ($state['search'] ?? ''));
+$isPointerSearchMode = (string) ($state['searchMode'] ?? 'standard') === 'pointer';
+$autoExpandOnSearch = !empty($state['autoExpandOnSearch']);
+$requestedVisibleColumns = (array) ($state['visibleColumns'] ?? []);
+$columnLabels = (array) ($state['columnLabels'] ?? []);
+
+if (empty($requestedVisibleColumns)) {
+    $columns = $availableColumns;
+} else {
+    $columns = [];
+    $availableColumnsMap = array_fill_keys($availableColumns, true);
+
+    foreach ($requestedVisibleColumns as $column) {
+        if (isset($availableColumnsMap[$column])) {
+            $columns[] = $column;
+        }
+    }
+
+    $columns = array_values(array_unique($columns));
+
+    if (empty($columns)) {
+        $columns = $availableColumns;
+    }
+}
 
 $escape = static function ($value): string {
     if ($value === null) {
@@ -42,9 +66,10 @@ $escape = static function ($value): string {
                 <?php foreach ($columns as $column) :
                     $isCurrent = $sort === $column;
                     $nextDir = ($isCurrent && $dir === 'asc') ? 'desc' : 'asc';
+                    $columnLabel = $columnLabels[$column] ?? $column;
                     ?>
                     <th scope="col" data-sort="<?php echo $escape($column); ?>" data-dir="<?php echo $nextDir; ?>">
-                        <?php echo $escape($column); ?>
+                        <?php echo $escape($columnLabel); ?>
                         <?php if ($isCurrent) : ?>
                             <span class="pg-report__sort-mark"><?php echo $dir === 'asc' ? '▲' : '▼'; ?></span>
                         <?php endif; ?>
@@ -54,13 +79,30 @@ $escape = static function ($value): string {
             </thead>
             <tbody>
             <?php foreach ($groups as $groupIndex => $group) : ?>
-                <?php $isCollapsed = $collapsedByDefault; ?>
-                <tr class="pg-report__group-row">
+                <?php
+                $groupRows = $group['rows'] ?? [];
+                $groupHasMatch = false;
+
+                foreach ($groupRows as $groupRow) {
+                    if (!empty($groupRow['__match'])) {
+                        $groupHasMatch = true;
+                        break;
+                    }
+                }
+
+                $isCollapsed = $collapsedByDefault;
+
+                if ($isPointerSearchMode && $autoExpandOnSearch && $search !== '') {
+                    $isCollapsed = !$groupHasMatch;
+                }
+                ?>
+                <tr class="pg-report__group-row" data-has-match="<?php echo $groupHasMatch ? '1' : '0'; ?>">
                     <td colspan="<?php echo count($columns); ?>">
                         <?php if ($collapsible) : ?>
                             <button
                                 class="pg-report__toggle btn btn-sm btn-outline-primary me-2"
                                 data-group="<?php echo $groupIndex; ?>"
+                                data-has-match="<?php echo $groupHasMatch ? '1' : '0'; ?>"
                                 data-label-expand="<?php echo $escape(Text::_('MOD_PG_REPORT_EXPAND_GROUP')); ?>"
                                 data-label-collapse="<?php echo $escape(Text::_('MOD_PG_REPORT_COLLAPSE_GROUP')); ?>"
                                 type="button"
@@ -82,8 +124,8 @@ $escape = static function ($value): string {
                         </span>
                     </td>
                 </tr>
-                <?php foreach (($group['rows'] ?? []) as $row) : ?>
-                    <tr class="pg-report__data-row<?php echo $isCollapsed ? ' pg-report__row--hidden' : ''; ?>" data-group="<?php echo $groupIndex; ?>">
+                <?php foreach ($groupRows as $row) : ?>
+                    <tr class="pg-report__data-row<?php echo !empty($row['__match']) ? ' pg-report__row--match' : ''; ?><?php echo $isCollapsed ? ' pg-report__row--hidden' : ''; ?>" data-group="<?php echo $groupIndex; ?>">
                         <?php foreach ($columns as $column) : ?>
                             <td><?php echo $escape($row[$column] ?? null); ?></td>
                         <?php endforeach; ?>

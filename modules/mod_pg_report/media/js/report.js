@@ -17,6 +17,8 @@
       page: 1,
       perPage: Number(container.dataset.defaultPerPage || 25),
       search: '',
+      searchMode: container.dataset.searchMode || 'standard',
+      autoExpandOnSearch: container.dataset.autoExpandOnSearch === '1',
     };
 
     let searchTimer = null;
@@ -58,6 +60,14 @@
     };
 
     const applyInitialCollapsedState = () => {
+      if (state.searchMode === 'pointer' && state.autoExpandOnSearch && state.search.trim() !== '') {
+        content.querySelectorAll('.pg-report__toggle').forEach((toggleTarget) => {
+          const hasMatch = toggleTarget.dataset.hasMatch === '1';
+          setGroupCollapsed(toggleTarget, !hasMatch);
+        });
+        return;
+      }
+
       if (container.dataset.collapsedByDefault !== '1') {
         return;
       }
