@@ -13,7 +13,7 @@ use Joomla\CMS\Language\Text;
 
 class PgReportEngineService
 {
-    /** @var resource|null */
+    /** @var \PgSql\Connection|resource|null */
     private $connection;
 
     public function run(array $options): array
@@ -186,11 +186,90 @@ class PgReportEngineService
         $sql = trim($sql);
 
         if ($stripOrderBy) {
-            $sql = preg_replace('/\s+ORDER\s+BY\s+[\s\S]*$/i', '', $sql) ?: $sql;
+            $sql = $this->stripTrailingOrderBy($sql);
             $sql = trim($sql);
         }
 
         return $sql;
+    }
+
+    private function stripTrailingOrderBy(string $sql): string
+    {
+        $length = strlen($sql);
+        $depth = 0;
+        $inSingleQuote = false;
+        $inDoubleQuote = false;
+        $orderByPos = null;
+
+        for ($i = 0; $i < $length; $i++) {
+            $char = $sql[$i];
+            $next = $i + 1 < $length ? $sql[$i + 1] : '';
+
+            if ($inSingleQuote) {
+                if ($char === "'" && $next === "'") {
+                    $i++;
+                    continue;
+                }
+
+                if ($char === "'") {
+                    $inSingleQuote = false;
+                }
+
+                continue;
+            }
+
+            if ($inDoubleQuote) {
+                if ($char === '"' && $next === '"') {
+                    $i++;
+                    continue;
+                }
+
+                if ($char === '"') {
+                    $inDoubleQuote = false;
+                }
+
+                continue;
+            }
+
+            if ($char === "'") {
+                $inSingleQuote = true;
+                continue;
+            }
+
+            if ($char === '"') {
+                $inDoubleQuote = true;
+                continue;
+            }
+
+            if ($char === '(') {
+                $depth++;
+                continue;
+            }
+
+            if ($char === ')') {
+                $depth = max(0, $depth - 1);
+                continue;
+            }
+
+            if ($depth !== 0) {
+                continue;
+            }
+
+            if (stripos(substr($sql, $i), 'order by') === 0) {
+                $prev = $i > 0 ? $sql[$i - 1] : ' ';
+                $after = $i + 8 < $length ? $sql[$i + 8] : ' ';
+
+                if (!preg_match('/[A-Za-z0-9_]/', $prev) && !preg_match('/[A-Za-z0-9_]/', $after)) {
+                    $orderByPos = $i;
+                }
+            }
+        }
+
+        if ($orderByPos === null) {
+            return $sql;
+        }
+
+        return rtrim(substr($sql, 0, $orderByPos));
     }
 
     private function validateSqlSafety(string $sql): void
@@ -212,7 +291,10 @@ class PgReportEngineService
         }
     }
 
-    private function connect(array $db): mixed
+    /**
+     * @return \PgSql\Connection|resource
+     */
+    private function connect(array $db)
     {
         $parts = [];
 
@@ -233,9 +315,7 @@ class PgReportEngineService
             throw new \RuntimeException(Text::_('PLG_SYSTEM_PGREPORTENGINE_ERROR_INVALID_SSLMODE'));
         }
 
-        if ($sslMode !== '') {
-            $parts[] = 'sslmode=' . $this->quoteConnValue($sslMode);
-        }
+        $parts[] = 'sslmode=' . $this->quoteConnValue($sslMode);
 
         $sslRootCert = trim((string) ($db['sslrootcert'] ?? ''));
 
@@ -313,7 +393,10 @@ class PgReportEngineService
         return 'COALESCE(' . implode(', ', $parts) . ", '" . $groupEmptyLabel . "')";
     }
 
-    private function fetchOne(string $sql, array $params, string $column): mixed
+    /**
+     * @return string|int|float|null
+     */
+    private function fetchOne(string $sql, array $params, string $column): string|int|float|null
     {
         $rows = $this->fetchRows($sql, $params);
 

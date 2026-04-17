@@ -131,13 +131,6 @@ class ModPgReportHelper
 
     private static function renderTable(array $result, array $state): string
     {
-        $displayData = [
-            'result' => $result,
-            'state' => $state,
-        ];
-
-        extract($displayData, EXTR_SKIP);
-
         ob_start();
         include __DIR__ . '/tmpl/table.php';
 

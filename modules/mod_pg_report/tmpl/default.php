@@ -8,10 +8,13 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
 
 $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
-$wa->registerAndUseScript('mod_pg_report.main', 'modules/mod_pg_report/media/js/report.js', [], ['defer' => true]);
-$wa->registerAndUseStyle('mod_pg_report.main', 'modules/mod_pg_report/media/css/report.css');
+$base = rtrim(Uri::root(true), '/');
+
+$wa->registerAndUseScript('mod_pg_report.main', $base . '/modules/mod_pg_report/media/js/report.js', [], ['defer' => true]);
+$wa->registerAndUseStyle('mod_pg_report.main', $base . '/modules/mod_pg_report/media/css/report.css');
 ?>
 <div
     class="pg-report"

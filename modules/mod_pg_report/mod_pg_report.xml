@@ -43,7 +43,7 @@
                 <field name="default_sort_by" type="text" label="MOD_PG_REPORT_DEFAULT_SORT_BY" default="dept_code" />
                 <field name="default_sort_dir" type="list" label="MOD_PG_REPORT_DEFAULT_SORT_DIR" default="asc">
                     <option value="asc">MOD_PG_REPORT_ASC</option>
-                    <option value="desc">MOD_PG_REPORT_DESC_DIR</option>
+                    <option value="desc">MOD_PG_REPORT_DESCENDING</option>
                 </field>
                 <field name="per_page_default" type="number" label="MOD_PG_REPORT_PER_PAGE_DEFAULT" default="25" min="1" />
                 <field name="max_per_page" type="number" label="MOD_PG_REPORT_MAX_PER_PAGE" default="200" min="1" />
