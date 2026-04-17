@@ -42,7 +42,10 @@ class PgReportEngineService
         }
 
         $search = trim((string) ($options['search'] ?? ''));
+        $searchMode = strtolower((string) ($options['search_mode'] ?? 'standard')) === 'pointer' ? 'pointer' : 'standard';
         $searchColumns = $this->filterColumns($columns, $options['search_columns'] ?? []);
+        $pointerMatchColumns = $this->filterColumns($columns, $options['pointer_match_columns'] ?? ['fullfio', 'email', 'mobile_phone', 'ip_phone']);
+        $pointerMatchColumns = !empty($pointerMatchColumns) ? $pointerMatchColumns : $searchColumns;
         $groupCascade = $this->filterColumns($columns, $options['group_key_cascade'] ?? ['department_name', 'maindepartament', 'dept_code', 'dept_id']);
 
         $sort = (string) ($options['sort'] ?? '');
@@ -60,34 +63,50 @@ class PgReportEngineService
             $warnings[] = Text::_('PLG_SYSTEM_PGREPORTENGINE_WARNING_EMPLOYEE_ID_ALIAS');
         }
 
-        $whereSql = '';
-        $searchParams = [];
+        $groupExpr = $this->buildGroupExpression($groupCascade);
+        $isPointerSearch = $searchMode === 'pointer' && $search !== '' && !empty($pointerMatchColumns);
 
-        if ($search !== '' && !empty($searchColumns)) {
-            $parts = [];
-            $searchValue = '%' . $search . '%';
+        $countParams = [];
+        $countWhereSql = '';
 
-            foreach ($searchColumns as $column) {
-                $searchParams[] = $searchValue;
-                $parts[] = 'CAST(t.' . $this->quoteIdentifier($column) . ' AS TEXT) ILIKE $' . count($searchParams);
-            }
-
-            $whereSql = ' WHERE (' . implode(' OR ', $parts) . ')';
+        if ($isPointerSearch) {
+            $index = 1;
+            $pointerCondition = $this->buildSearchCondition($pointerMatchColumns, $search, 't', $index, $countParams);
+            $matchedGroupKeysSql = 'SELECT DISTINCT ' . $groupExpr . ' AS group_key FROM (' . $sql . ') t WHERE (' . $pointerCondition . ')';
+            $countWhereSql = ' WHERE ' . $groupExpr . ' IN (' . $matchedGroupKeysSql . ')';
+        } elseif ($search !== '' && !empty($searchColumns)) {
+            $index = 1;
+            $searchCondition = $this->buildSearchCondition($searchColumns, $search, 't', $index, $countParams);
+            $countWhereSql = ' WHERE (' . $searchCondition . ')';
         }
 
-        $groupExpr = $this->buildGroupExpression($groupCascade);
+        $countSql = 'SELECT COUNT(*) AS total_rows FROM (' . $sql . ') t' . $countWhereSql;
+        $totalRows = (int) $this->fetchOne($countSql, $countParams, 'total_rows');
 
-        $countSql = 'SELECT COUNT(*) AS total_rows FROM (' . $sql . ') t' . $whereSql;
-        $totalRows = (int) $this->fetchOne($countSql, $searchParams, 'total_rows');
+        $dataParams = [];
+        $dataWhereSql = '';
+        $matchSelect = '0 AS __match, ';
 
-        $dataSql = 'SELECT t.*, ' . $groupExpr . ' AS __group_key '
+        if ($isPointerSearch) {
+            $index = 1;
+            $rowMatchCondition = $this->buildSearchCondition($pointerMatchColumns, $search, 't', $index, $dataParams);
+            $matchSelect = 'CASE WHEN (' . $rowMatchCondition . ') THEN 1 ELSE 0 END AS __match, ';
+            $pointerCondition = $this->buildSearchCondition($pointerMatchColumns, $search, 't', $index, $dataParams);
+            $matchedGroupKeysSql = 'SELECT DISTINCT ' . $groupExpr . ' AS group_key FROM (' . $sql . ') t WHERE (' . $pointerCondition . ')';
+            $dataWhereSql = ' WHERE ' . $groupExpr . ' IN (' . $matchedGroupKeysSql . ')';
+        } elseif ($search !== '' && !empty($searchColumns)) {
+            $index = 1;
+            $searchCondition = $this->buildSearchCondition($searchColumns, $search, 't', $index, $dataParams);
+            $dataWhereSql = ' WHERE (' . $searchCondition . ')';
+        }
+
+        $dataSql = 'SELECT t.*, ' . $matchSelect . $groupExpr . ' AS __group_key '
             . 'FROM (' . $sql . ') t'
-            . $whereSql
+            . $dataWhereSql
             . ' ORDER BY __group_key ASC, t.' . $this->quoteIdentifier($sort) . ' ' . $dir
-            . ' LIMIT $' . (count($searchParams) + 1)
-            . ' OFFSET $' . (count($searchParams) + 2);
+            . ' LIMIT $' . (count($dataParams) + 1)
+            . ' OFFSET $' . (count($dataParams) + 2);
 
-        $dataParams = $searchParams;
         $dataParams[] = $perPage;
         $dataParams[] = $offset;
 
@@ -99,17 +118,31 @@ class PgReportEngineService
         $employeesExpr = $hasEmployeeId ? 'COUNT(DISTINCT t.' . $this->quoteIdentifier('employee_id') . ')' : 'COUNT(*)';
         $positionsExpr = $hasOesId ? 'COUNT(DISTINCT t.' . $this->quoteIdentifier('oes_id') . ')' : 'COUNT(*)';
 
+        $groupTotalsParams = [];
+        $groupTotalsWhereSql = '';
+
+        if ($isPointerSearch) {
+            $index = 1;
+            $pointerCondition = $this->buildSearchCondition($pointerMatchColumns, $search, 't', $index, $groupTotalsParams);
+            $matchedGroupKeysSql = 'SELECT DISTINCT ' . $groupExpr . ' AS group_key FROM (' . $sql . ') t WHERE (' . $pointerCondition . ')';
+            $groupTotalsWhereSql = ' WHERE ' . $groupExpr . ' IN (' . $matchedGroupKeysSql . ')';
+        } elseif ($search !== '' && !empty($searchColumns)) {
+            $index = 1;
+            $searchCondition = $this->buildSearchCondition($searchColumns, $search, 't', $index, $groupTotalsParams);
+            $groupTotalsWhereSql = ' WHERE (' . $searchCondition . ')';
+        }
+
         $groupTotalsSql = 'SELECT '
             . $groupExpr . ' AS group_key, '
             . $employeesExpr . ' AS employees_cnt, '
             . $positionsExpr . ' AS positions_cnt, '
             . 'COUNT(*) AS rows_cnt '
             . 'FROM (' . $sql . ') t'
-            . $whereSql
+            . $groupTotalsWhereSql
             . ' GROUP BY group_key'
             . ' ORDER BY group_key ASC';
 
-        $groupTotals = $this->fetchRows($groupTotalsSql, $searchParams);
+        $groupTotals = $this->fetchRows($groupTotalsSql, $groupTotalsParams);
         $groupTotalsMap = [];
 
         foreach ($groupTotals as $totalsRow) {
@@ -374,6 +407,20 @@ class PgReportEngineService
         }
 
         return array_values(array_filter($requested, static fn($column) => in_array($column, $availableColumns, true)));
+    }
+
+    private function buildSearchCondition(array $columns, string $search, string $alias, int &$index, array &$params): string
+    {
+        $parts = [];
+        $searchValue = '%' . $search . '%';
+
+        foreach ($columns as $column) {
+            $params[] = $searchValue;
+            $parts[] = 'CAST(' . $alias . '.' . $this->quoteIdentifier($column) . ' AS TEXT) ILIKE $' . $index;
+            $index++;
+        }
+
+        return implode(' OR ', $parts);
     }
 
     private function buildGroupExpression(array $groupCascade): string

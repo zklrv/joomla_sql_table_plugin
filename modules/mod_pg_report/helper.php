@@ -19,6 +19,7 @@ class ModPgReportHelper
     public static function getInitialState($module, Registry $params): array
     {
         $collapsibleGroups = (bool) $params->get('collapsible_groups', 1);
+        $searchMode = self::normalizeSearchMode((string) $params->get('search_mode', 'standard'));
 
         return [
             'moduleId' => (int) $module->id,
@@ -29,6 +30,8 @@ class ModPgReportHelper
             'defaultSortDir' => strtolower((string) $params->get('default_sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc',
             'collapsibleGroups' => $collapsibleGroups,
             'collapsedByDefault' => $collapsibleGroups && (bool) $params->get('collapsed_by_default', 0),
+            'searchMode' => $searchMode,
+            'autoExpandOnSearch' => (bool) $params->get('auto_expand_on_search', 1),
         ];
     }
 
@@ -83,6 +86,10 @@ class ModPgReportHelper
                 'search' => trim((string) $input->getString('search', '')),
                 'collapsibleGroups' => $collapsibleGroups,
                 'collapsedByDefault' => $collapsedByDefault,
+                'autoExpandOnSearch' => (bool) $params->get('auto_expand_on_search', 1),
+                'searchMode' => self::normalizeSearchMode((string) $params->get('search_mode', 'standard')),
+                'visibleColumns' => self::parseCsv((string) $params->get('visible_columns', '')),
+                'columnLabels' => self::parseColumnLabels((string) $params->get('column_labels', '')),
             ];
 
             return [
@@ -111,7 +118,9 @@ class ModPgReportHelper
             'sql' => (string) $params->get('base_sql', ''),
             'strip_order_by' => (bool) $params->get('strip_order_by', 1),
             'search' => trim((string) $input->getString('search', '')),
+            'search_mode' => self::normalizeSearchMode((string) $params->get('search_mode', 'standard')),
             'search_columns' => self::parseCsv($params->get('search_columns', 'dept_code,maindepartament,department_name,staff_unit_name,fullfio,email,mobile_phone,ip_phone')),
+            'pointer_match_columns' => self::parseCsv((string) $params->get('pointer_match_columns', 'fullfio,email,mobile_phone,ip_phone')),
             'sort' => $input->getCmd('sort', (string) $params->get('default_sort_by', '')),
             'dir' => strtolower($input->getCmd('dir', (string) $params->get('default_sort_dir', 'asc'))) === 'desc' ? 'desc' : 'asc',
             'page' => max(1, $input->getInt('page', 1)),
@@ -131,7 +140,7 @@ class ModPgReportHelper
             'access' => [
                 'allow_guests' => (bool) $params->get('allow_guests', 0),
                 'mode' => (string) $params->get('acl_mode', 'allow'),
-                'groups' => (array) $params->get('acl_groups', []),
+                'groups' => self::normalizeGroupIds($params->get('acl_groups', [])),
             ],
         ];
     }
@@ -153,6 +162,57 @@ class ModPgReportHelper
         $items = array_filter(array_map('trim', explode(',', $value)), static fn($v) => $v !== '');
 
         return array_values(array_unique($items));
+    }
+
+    private static function parseColumnLabels(string $value): array
+    {
+        $lines = preg_split('/\R/u', $value) ?: [];
+        $map = [];
+
+        foreach ($lines as $line) {
+            $line = trim((string) $line);
+
+            if ($line === '' || strpos($line, '=') === false) {
+                continue;
+            }
+
+            [$column, $label] = explode('=', $line, 2);
+            $column = trim($column);
+            $label = trim($label);
+
+            if ($column === '' || $label === '') {
+                continue;
+            }
+
+            $map[$column] = $label;
+        }
+
+        return $map;
+    }
+
+    private static function normalizeSearchMode(string $value): string
+    {
+        return strtolower($value) === 'pointer' ? 'pointer' : 'standard';
+    }
+
+    private static function normalizeGroupIds($value): array
+    {
+        $raw = is_array($value) ? $value : [$value];
+        $ids = [];
+
+        foreach ($raw as $item) {
+            $parts = explode(',', (string) $item);
+
+            foreach ($parts as $part) {
+                $id = (int) trim($part);
+
+                if ($id > 0) {
+                    $ids[$id] = $id;
+                }
+            }
+        }
+
+        return array_values($ids);
     }
 
     private static function loadModuleById(int $moduleId): ?object
