@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" client="site" method="upgrade">
+    <name>MOD_PG_REPORT</name>
+    <author>zklrv</author>
+    <version>1.0.0</version>
+    <description>MOD_PG_REPORT_DESC</description>
+
+    <files>
+        <filename module="mod_pg_report">mod_pg_report.php</filename>
+        <filename>helper.php</filename>
+        <folder>tmpl</folder>
+        <folder>media</folder>
+        <folder>language</folder>
+    </files>
+
+    <languages folder="language">
+        <language tag="uk-UA">uk-UA/mod_pg_report.ini</language>
+        <language tag="uk-UA">uk-UA/mod_pg_report.sys.ini</language>
+        <language tag="en-GB">en-GB/mod_pg_report.ini</language>
+        <language tag="en-GB">en-GB/mod_pg_report.sys.ini</language>
+    </languages>
+
+    <config>
+        <fields name="params">
+            <fieldset name="general" label="MOD_PG_REPORT_FIELDSET_GENERAL">
+                <field
+                    name="base_sql"
+                    type="textarea"
+                    label="MOD_PG_REPORT_BASE_SQL"
+                    description="MOD_PG_REPORT_BASE_SQL_DESC"
+                    rows="14"
+                    required="true"
+                    filter="raw"
+                />
+
+                <field name="strip_order_by" type="radio" label="MOD_PG_REPORT_STRIP_ORDER_BY" default="1" class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+
+                <field name="group_key_cascade" type="text" label="MOD_PG_REPORT_GROUP_KEY_CASCADE" default="department_name,maindepartament,dept_code,dept_id" />
+                <field name="search_columns" type="text" label="MOD_PG_REPORT_SEARCH_COLUMNS" default="dept_code,maindepartament,department_name,staff_unit_name,fullfio,email,mobile_phone,ip_phone" />
+                <field name="default_sort_by" type="text" label="MOD_PG_REPORT_DEFAULT_SORT_BY" default="dept_code" />
+                <field name="default_sort_dir" type="list" label="MOD_PG_REPORT_DEFAULT_SORT_DIR" default="asc">
+                    <option value="asc">MOD_PG_REPORT_ASC</option>
+                    <option value="desc">MOD_PG_REPORT_DESCENDING</option>
+                </field>
+                <field name="per_page_default" type="number" label="MOD_PG_REPORT_PER_PAGE_DEFAULT" default="25" min="1" />
+                <field name="max_per_page" type="number" label="MOD_PG_REPORT_MAX_PER_PAGE" default="200" min="1" />
+                <field name="collapsible_groups" type="radio" label="MOD_PG_REPORT_COLLAPSIBLE_GROUPS" default="1" class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="database" label="MOD_PG_REPORT_FIELDSET_DATABASE">
+                <field name="db_host" type="text" label="MOD_PG_REPORT_DB_HOST" default="localhost" required="true" />
+                <field name="db_port" type="number" label="MOD_PG_REPORT_DB_PORT" default="5432" required="true" />
+                <field name="db_name" type="text" label="MOD_PG_REPORT_DB_NAME" required="true" />
+                <field name="db_user" type="text" label="MOD_PG_REPORT_DB_USER" required="true" />
+                <field name="db_password" type="password" label="MOD_PG_REPORT_DB_PASSWORD" required="true" filter="raw" />
+                <field name="db_schema" type="text" label="MOD_PG_REPORT_DB_SCHEMA" />
+                <field name="db_sslmode" type="list" label="MOD_PG_REPORT_DB_SSLMODE" default="disable">
+                    <option value="disable">disable</option>
+                    <option value="prefer">prefer</option>
+                    <option value="require">require</option>
+                    <option value="verify-ca">verify-ca</option>
+                    <option value="verify-full">verify-full</option>
+                </field>
+                <field name="db_sslrootcert" type="text" label="MOD_PG_REPORT_DB_SSLROOTCERT" />
+            </fieldset>
+
+            <fieldset name="access" label="MOD_PG_REPORT_FIELDSET_ACCESS">
+                <field name="allow_guests" type="radio" label="MOD_PG_REPORT_ALLOW_GUESTS" default="0" class="btn-group btn-group-yesno">
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field name="acl_mode" type="list" label="MOD_PG_REPORT_ACL_MODE" default="allow">
+                    <option value="allow">MOD_PG_REPORT_ACL_MODE_ALLOW</option>
+                    <option value="deny">MOD_PG_REPORT_ACL_MODE_DENY</option>
+                </field>
+                <field name="acl_groups" type="usergrouplist" label="MOD_PG_REPORT_ACL_GROUPS" multiple="true" />
+            </fieldset>
+        </fields>
+    </config>
+</extension>
