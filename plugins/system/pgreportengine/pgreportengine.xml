@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade">
+    <name>PLG_SYSTEM_PGREPORTENGINE</name>
+    <author>zklrv</author>
+    <version>1.0.0</version>
+    <description>PLG_SYSTEM_PGREPORTENGINE_DESC</description>
+
+    <files>
+        <filename plugin="pgreportengine">pgreportengine.php</filename>
+        <folder>src</folder>
+        <folder>language</folder>
+    </files>
+
+    <languages folder="language">
+        <language tag="uk-UA">uk-UA/plg_system_pgreportengine.ini</language>
+        <language tag="uk-UA">uk-UA/plg_system_pgreportengine.sys.ini</language>
+        <language tag="en-GB">en-GB/plg_system_pgreportengine.ini</language>
+        <language tag="en-GB">en-GB/plg_system_pgreportengine.sys.ini</language>
+    </languages>
+</extension>
