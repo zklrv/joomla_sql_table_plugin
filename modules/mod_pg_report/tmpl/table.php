@@ -18,6 +18,7 @@ $page = max(1, (int) ($result['page'] ?? 1));
 $sort = (string) ($state['sort'] ?? '');
 $dir = (string) ($state['dir'] ?? 'asc');
 $collapsible = !empty($state['collapsibleGroups']);
+$collapsedByDefault = $collapsible && !empty($state['collapsedByDefault']);
 
 $escape = static function ($value): string {
     if ($value === null) {
@@ -53,13 +54,25 @@ $escape = static function ($value): string {
             </thead>
             <tbody>
             <?php foreach ($groups as $groupIndex => $group) : ?>
+                <?php $isCollapsed = $collapsedByDefault; ?>
                 <tr class="pg-report__group-row">
                     <td colspan="<?php echo count($columns); ?>">
                         <?php if ($collapsible) : ?>
-                            <button class="pg-report__toggle" data-group="<?php echo $groupIndex; ?>" type="button">−</button>
+                            <button
+                                class="pg-report__toggle btn btn-sm btn-outline-primary me-2"
+                                data-group="<?php echo $groupIndex; ?>"
+                                data-label-expand="<?php echo $escape(Text::_('MOD_PG_REPORT_EXPAND_GROUP')); ?>"
+                                data-label-collapse="<?php echo $escape(Text::_('MOD_PG_REPORT_COLLAPSE_GROUP')); ?>"
+                                type="button"
+                                aria-expanded="<?php echo $isCollapsed ? 'false' : 'true'; ?>"
+                                title="<?php echo $escape(Text::_('MOD_PG_REPORT_TOGGLE_GROUP')); ?>"
+                            >
+                                <span class="visually-hidden pg-report__toggle-text"><?php echo $isCollapsed ? $escape(Text::_('MOD_PG_REPORT_EXPAND_GROUP')) : $escape(Text::_('MOD_PG_REPORT_COLLAPSE_GROUP')); ?></span>
+                                <span class="pg-report__toggle-icon" aria-hidden="true"><?php echo $isCollapsed ? '+' : '−'; ?></span>
+                            </button>
                         <?php endif; ?>
                         <strong><?php echo $escape($group['label'] ?? Text::_('MOD_PG_REPORT_GROUP_EMPTY')); ?></strong>
-                        <span class="pg-report__totals">
+                        <span class="pg-report__totals ms-3">
                             <?php echo Text::sprintf(
                                 'MOD_PG_REPORT_GROUP_TOTALS',
                                 (int) ($group['employees_cnt'] ?? 0),
@@ -70,7 +83,7 @@ $escape = static function ($value): string {
                     </td>
                 </tr>
                 <?php foreach (($group['rows'] ?? []) as $row) : ?>
-                    <tr class="pg-report__data-row" data-group="<?php echo $groupIndex; ?>">
+                    <tr class="pg-report__data-row<?php echo $isCollapsed ? ' pg-report__row--hidden' : ''; ?>" data-group="<?php echo $groupIndex; ?>">
                         <?php foreach ($columns as $column) : ?>
                             <td><?php echo $escape($row[$column] ?? null); ?></td>
                         <?php endforeach; ?>
@@ -82,11 +95,11 @@ $escape = static function ($value): string {
     </div>
 
     <div class="pg-report__pagination">
-        <button type="button" data-page="<?php echo max(1, $page - 1); ?>" <?php echo $page <= 1 ? 'disabled' : ''; ?>>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-page="<?php echo max(1, $page - 1); ?>" <?php echo $page <= 1 ? 'disabled' : ''; ?>>
             <?php echo Text::_('JPREVIOUS'); ?>
         </button>
         <span><?php echo Text::sprintf('MOD_PG_REPORT_PAGE_OF', $page, $totalPages); ?></span>
-        <button type="button" data-page="<?php echo min($totalPages, $page + 1); ?>" <?php echo $page >= $totalPages ? 'disabled' : ''; ?>>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-page="<?php echo min($totalPages, $page + 1); ?>" <?php echo $page >= $totalPages ? 'disabled' : ''; ?>>
             <?php echo Text::_('JNEXT'); ?>
         </button>
     </div>

@@ -8,13 +8,11 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Uri\Uri;
 
 $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
-$base = rtrim(Uri::root(true), '/');
 
-$wa->registerAndUseScript('mod_pg_report.main', $base . '/modules/mod_pg_report/media/js/report.js', [], ['defer' => true]);
-$wa->registerAndUseStyle('mod_pg_report.main', $base . '/modules/mod_pg_report/media/css/report.css');
+$wa->registerAndUseScript('mod_pg_report.main', 'media/mod_pg_report/js/report.js', [], ['defer' => true]);
+$wa->registerAndUseStyle('mod_pg_report.main', 'media/mod_pg_report/css/report.css');
 ?>
 <div
     class="pg-report"
@@ -24,6 +22,7 @@ $wa->registerAndUseStyle('mod_pg_report.main', $base . '/modules/mod_pg_report/m
     data-default-sort="<?php echo htmlspecialchars($initialState['defaultSortBy'], ENT_QUOTES, 'UTF-8'); ?>"
     data-default-dir="<?php echo htmlspecialchars($initialState['defaultSortDir'], ENT_QUOTES, 'UTF-8'); ?>"
     data-default-per-page="<?php echo (int) $initialState['defaultPerPage']; ?>"
+    data-collapsed-by-default="<?php echo !empty($initialState['collapsedByDefault']) ? '1' : '0'; ?>"
 >
     <div class="pg-report__controls">
         <label>
