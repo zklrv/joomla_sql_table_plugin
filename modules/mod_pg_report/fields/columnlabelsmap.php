@@ -55,7 +55,7 @@ class JFormFieldColumnLabelsMap extends FormField
             . "var label=input&&typeof input.value==='string'?input.value.trim():'';"
             . "if(key!==''&&label!==''){map[key]=label;}"
             . "});"
-            . "hidden.value=JSON.stringify(map);"
+            . "hidden.value=Object.keys(map).length?JSON.stringify(map):'';"
             . "};"
             . "table.addEventListener('input',function(event){if(event.target&&event.target.matches('input')){sync();}});"
             . "table.addEventListener('change',function(event){if(event.target&&event.target.matches('input')){sync();}});"
